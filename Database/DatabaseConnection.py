@@ -11,27 +11,32 @@ import logging
 import sys
 import os
 import oracledb
+import sqlite3
 
 
 class DatabaseConnection(object):
     connection = None
+
     def __init__(self, course_table="course_info", prereqs_table="prereqs", antireqs_table="antireqs",
                  requirements_table="requirements", communications_table="communications",
                  breadth_table="breadth_table"):
-        password = os.getenv("DB_PASS")
-        user = os.getenv("DB_USER")
-        dsn = os.getenv("ORACLE_DSN")
-        env = os.getenv("UWPATH_ENVIRONMENT")
-        
+        # password = os.getenv("DB_PASS")
+        # user = os.getenv("DB_USER")
+        # dsn = os.getenv("ORACLE_DSN")
+        # env = os.getenv("UWPATH_ENVIRONMENT")
+
         try:
-            if DatabaseConnection.connection is None or DatabaseConnection.ping():
-                if env is not None:
-                    wallet_location = os.getenv("TNS_ADMIN");
-                    print("Connecting to cloud db")
-                    DatabaseConnection.connection = oracledb.connect(user = user, password = password, dsn = dsn, config_dir = wallet_location, wallet_location=wallet_location, wallet_password = password)
-                else:
-                    DatabaseConnection.connection = oracledb.connect(user = user, password = password, dsn = dsn)
-                print("Successfully connected to db")
+            # if DatabaseConnection.connection is None or DatabaseConnection.ping():
+            #     if env is not None:
+            #         wallet_location = os.getenv("TNS_ADMIN");
+            #         print("Connecting to cloud db")
+            #         DatabaseConnection.connection = sqlite3.connect('uwpath.db')
+            #         # DatabaseConnection.connection = oracledb.connect(user = user, password = password, dsn = dsn, config_dir = wallet_location, wallet_location=wallet_location, wallet_password = password)
+            #     else:
+            #         DatabaseConnection.connection = oracledb.connect(user = user, password = password, dsn = dsn)
+            # DatabaseConnection.connection = sqlite3.connect('uwpath.db')
+            self.connection = sqlite3.connect('uwpath.db')
+            print("Successfully connected to db")
         except Exception as err:
             print("Whoops!")
             print(err);
@@ -45,7 +50,6 @@ class DatabaseConnection(object):
         self.breadth_table = breadth_table
 
         self.root = self.__Logger()
-
 
     def __Logger(self):
 
@@ -75,6 +79,7 @@ class DatabaseConnection(object):
             self.connection.commit()
 
     def close(self):
+        print("=== Closing connection")
         self.connection.close()
 
     def select(self, what, table, condition=""):
@@ -86,19 +91,12 @@ class DatabaseConnection(object):
         :param condition: string
         :return: list
         """
-        command = "SELECT " + what + " FROM " + table + " " + condition
+        command = "SELECT " + what + " FROM " + table + " " + condition + ";"
         self.execute(command)
         return self.cursor.fetchall()
-    
-    def drop_table(self, table) :
+
+    def drop_table(self, table):
         query = """
-        declare
-            c int;
-        begin
-            select count(*) into c from user_tables where table_name = upper('{table}');
-            if c = 1 then
-                execute immediate 'drop table {table}';
-            end if;
-        end;
+        drop table IF EXISTS {table}
         """
-        self.execute(query.format(table = table))
+        self.execute(query.format(table=table))

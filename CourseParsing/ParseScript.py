@@ -44,6 +44,12 @@ if __name__ == "__main__":
     dbc.create_courses()
     dbc.create_prereqs()
     dbc.create_antireqs()
+
+    # List all tables in sqlite
+    # res = dbc.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    # print(res.fetchall())
+    # res = dbc.cursor().execute("SELECT name FROM sqlite_master WHERE type='table';")
+
     for year in CALENDAR_YEARS:
         #parse 20XX-20YY s.t year_str = XXYY, Parse from the most current years because it has the most accurate prereqs, etc..
         year_str = year[2:4] + year[7: 9]
@@ -64,5 +70,6 @@ if __name__ == "__main__":
             dbc.insert_courses(parser.courses)
 
             dbc.commit()
+
 
     dbc.close()

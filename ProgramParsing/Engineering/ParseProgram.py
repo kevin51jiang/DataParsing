@@ -21,4 +21,4 @@ if __name__ == "__main__":
         'MajorParser2021_2022': EngineeringMajorParser2021_2022
     }
 
-    main(parsers, files, "Engineering")
+    main(parsers, files, "Engineering", DropTable=True)
